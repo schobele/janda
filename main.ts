@@ -1,13 +1,17 @@
 import { agent } from "./agent.ts";
 
 Deno.serve(async (req: Request) => {
-	const url = new URL(req.url);
-	const query = url.searchParams.get("q");
-	if (!query) {
-		return new Response("Was möchtest du wissen?");
+	if (req.method !== "POST") {
+		return new Response("Method not allowed", { status: 405 });
 	}
 
-	console.log("Params received:", JSON.stringify(url.searchParams, null, 2));
+	const body = await req.json();
+	const query = body.q;
+	if (!query) {
+		return new Response("Was möchtest du wissen?", { status: 400 });
+	}
+
+	console.log("Params received:", query);
 
 	try {
 		const response = await agent.respond(query);
