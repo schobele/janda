@@ -7,6 +7,8 @@ Deno.serve(async (req: Request) => {
 		return new Response("Was möchtest du wissen?");
 	}
 
+	console.log("Params received:", JSON.stringify(url.searchParams, null, 2));
+
 	try {
 		const response = await agent.respond(query);
 		return new Response(response, {
