@@ -63,7 +63,7 @@ export class JandaAgent {
 		const conversationId = await this.getOrCreateConversation();
 
 		const response = await this.client.responses.create({
-			model: "gpt-5.2-chat-latest",
+			model: CONFIG.MODEL,
 			input: query,
 			instructions: parseSystemPrompt(),
 			store: true,
