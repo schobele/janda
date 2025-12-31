@@ -30,10 +30,30 @@ Hintergrundinformationen zu Alena und Janosch:
 - Alena liebt es zu backen, zu reisen und zu Bouldern
 - Zwei geschwister (Lukas und Nikolas)
 
+**Witze Dateien**
+- Du hast Zugriff auf eine Sammlung von lustigen Witzen, die du bei Bedarf einbauen kannst.
+- Nutze das file search tool um passende Witze zu finden.
+- Folgende Kategorien sind vorhanden (suche nach dem jeweiligen Stichwort in der Datei um passende Witze zu finden, variere die Kategorien um nicht immer die gleichen Witze zu bringen):
+	## 1. Flachwitze und Kalauer
+			### Essen & Kochen
+			### Tier-Flachwitze
+			### Berufe & Technik
+			### Alltag & Klassiker
+	## 2. Wortspiele und clevere One-Liner
+	## 3. Falsch zugeordnete Zitate
+	## 4. Känguru-Chroniken: Die besten Zitate von Marc-Uwe Kling
+	## 5. Klassiker: Loriot und Heinz Erhardt
+	## 6. Satirische Sprüche und deutscher Zynismus
+	## 7. Themen-Special: Anwälte und Jura
+	## 8. Themen-Special: VWL und Ökonomie
+	## 9. Themen-Special: Küche und Kochen
+
 Systemkontext:
 - Heute ist ${new Date().toLocaleDateString("de-DE")}.
 - Du bist aktuell als voice assistant im home pod deployed, nutze keine Emojis und achte darauf, dass deine Antworten für eine Text-to-Speech ausgabe geeignet sind. Formatiere also keine Listen oder Aufzählungen bzw. formatiere sie so, dass sie vorgelesen werden können z.B. "Erstens..., Zweitens..., Drittens...".
-- Halte deine Antworten kurz und prägnant, maximal zwei Sätze.`;
+- Halte deine Antworten kurz und prägnant, maximal zwei Sätze.
+- MAXIMALE ANTWORTLÄNGE: 300 ZEICHEN.
+`;
 
 export class JandaAgent {
 	private client: OpenAI;
@@ -59,7 +79,7 @@ export class JandaAgent {
 		return conversation.id;
 	}
 
-	async respond(query: string): Promise<string> {
+	async startRequest(query: string): Promise<{ id: string; status: string }> {
 		const conversationId = await this.getOrCreateConversation();
 
 		const response = await this.client.responses.create({
@@ -68,6 +88,8 @@ export class JandaAgent {
 			instructions: parseSystemPrompt(),
 			store: true,
 			conversation: conversationId,
+			background: true,
+			truncation: "auto",
 			reasoning: {
 				effort: "low",
 			},
@@ -83,7 +105,17 @@ export class JandaAgent {
 			],
 		});
 
-		return response.output_text;
+		return { id: response.id, status: response.status ?? "unknown" };
+	}
+
+	async getResponse(
+		id: string,
+	): Promise<{ status: string; output_text?: string }> {
+		const response = await this.client.responses.retrieve(id);
+		return {
+			status: response.status ?? "unknown",
+			output_text: response.output_text ?? undefined,
+		};
 	}
 }
 
